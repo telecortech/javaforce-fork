@@ -1,0 +1,2 @@
+#!/bin/bash
+java -Xmx512m -cp /usr/share/java/javaforce.jar:/usr/share/java/jna.jar:/usr/share/java/jna-platform.jar:/usr/share/java/jcifs.jar:/usr/share/java/jfile.jar:/usr/share/java/jdesktop.jar Startup $*

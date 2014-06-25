@@ -1,0 +1,10 @@
+Package: plymouth-theme-jflinux
+Version: 0.2
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 1
+Depends: plymouth
+Provides: plymouth-theme
+Section: x11
+Priority: optional
+Description: graphical boot animation

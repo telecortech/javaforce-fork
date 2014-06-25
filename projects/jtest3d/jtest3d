@@ -1,0 +1,1 @@
+java -cp /usr/share/java/javaforce.jar:/usr/share/java/jna.jar:/usr/share/java/jtest3d.jar TestApp

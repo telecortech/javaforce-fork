@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+mkdir -p /etc/jdesktop
+
+if [ "$1" = upgrade ]; then
+    update-alternatives --remove x-window-manager /usr/bin/jdesktop
+fi
+
+exit 0

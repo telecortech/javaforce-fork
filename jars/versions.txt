@@ -1,0 +1,3 @@
+derby = 10.10.1.1
+bouncycastle = bcprov-jdk15on-150
+jna = 4.0.0

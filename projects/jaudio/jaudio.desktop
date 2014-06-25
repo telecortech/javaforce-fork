@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Audio Editor
+Comment=Audio Editor similar to Audacity
+
+Icon=jaudio
+
+Type=Application
+Categories=System
+
+Exec=jaudio
+StartupNotify=false
+Terminal=false
+MimeType=audio/x-wav;audio/flac;audio/mpeg
+
+Action=edit
+
+Title=jfAudio

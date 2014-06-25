@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Hex Editor
+Comment=Hex Editor
+
+Icon=jhex
+
+Type=Application
+Categories=System
+
+Exec=japps
+StartupNotify=false
+Terminal=false
+MimeType=
+
+Title=jhex

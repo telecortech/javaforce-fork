@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Repository Selector
+Comment=Select your repository geo-graphically.
+
+Icon=jrepo
+
+Type=Application
+Categories=System
+
+Exec=jrepo
+StartupNotify=false
+Terminal=false
+MimeType=
+
+Title=jrepo

@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Task Manager
+Comment=Monitor running tasks and resources.
+
+Icon=jtaskmgr
+
+Type=Application
+Categories=System
+
+Exec=jtaskmgr
+StartupNotify=false
+Terminal=false
+MimeType=
+
+Title=jtaskmgr

@@ -1,0 +1,55 @@
+<project name="jcapture" default="jar" basedir=".">
+  <description>jcapture</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JCAPTUREVERSION" value="0.4"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jcapture.jar" includes="*.class" basedir="${build}">
+      <manifest>
+        <attribute name="Main-Class" value="CapScreenApp"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jcapture.jar" todir="/usr/share/java"/>
+    <copy file="jcapture-screen" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jcapture-screen" perm="+x"/>
+    <copy file="jcapture-window" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jcapture-window" perm="+x"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jcapture-${JCAPTUREVERSION}_all.deb"/>
+    </exec>
+    <copy file="jcapture-${JCAPTUREVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jcapture.spec"/>
+    </exec>
+    <copy file="jcapture-${JCAPTUREVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

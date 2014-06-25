@@ -1,0 +1,111 @@
+<project name="jtorrent" default="jar" basedir=".">
+  <description>jtorrent</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JTORRENTVERSION" value="0.4"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jftorrent.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile,depjars" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jtorrent.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <fileset dir="." includes="*.crt"/>
+      <manifest>
+        <attribute name="Main-Class" value="TorrentApp"/>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jftorrent.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <available property="keyexists" file="keystore.key"/>
+
+  <target name="genkey" unless="keyexists" description="generate keys">
+    <!-- create key -->
+    <genkey alias="jtorrent" storepass="password" keystore="keystore.key" keyalg="RSA" dname="CN=jftorrent.sourceforge.net, OU=jftorrent, O=JavaForce, C=CA"/>
+    <!-- create csr -->
+    <exec command="keytool -certreq -alias jtorrent -keystore keystore.key -file jtorrent.csr -storepass password"/>
+    <copy file="jtorrent.csr" todir="../../keys"/>
+  </target>
+
+  <target name="importcert">
+    <copy file="../../keys/javaforce.crt" todir="."/>
+    <exec command="keytool -import -alias root -file javaforce.crt -keystore keystore.key -storepass password -noprompt"/>
+    <copy file="../../keys/jtorrent.crt" todir="."/>
+    <exec command="keytool -import -alias jtorrent -file jtorrent.crt -keystore keystore.key -storepass password"/>
+  </target>
+
+  <target name="sign-jar" depends="jar,depjars" description="create applet jars">
+    <signjar jar="jtorrent.jar" alias="jtorrent" storepass="password" keystore="keystore.key" signedjar="jtorrent-signed.jar"/>
+    <signjar jar="javaforce.jar" alias="jtorrent" storepass="password" keystore="keystore.key" signedjar="javaforce-signed.jar"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jtorrent.jar" todir="/usr/share/java"/>
+    <copy file="jtorrent" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jtorrent" perm="+x"/>
+    <copy file="jtorrentTracker" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jtorrentTracker" perm="+x"/>
+    <copy file="jtorrentMaker" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jtorrentMaker" perm="+x"/>
+    <copy file="jtorrent.desktop" todir="/usr/share/applications"/>
+    <copy file="jtorrent.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jtorrent.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jtorrent-${JTORRENTVERSION}_all.deb"/>
+    </exec>
+    <copy file="jtorrent-${JTORRENTVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jtorrent.spec"/>
+    </exec>
+    <copy file="jtorrent-${JTORRENTVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="release-bin" depends="sign-jar" description="create release zip file">
+    <zip destfile="jtorrent-${JTORRENTVERSION}.zip">
+      <fileset dir=".">
+        <include name="j*.jar"/>
+        <include name="readme.txt"/>
+        <include name="run*.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+      <fileset dir="../../jars" includes="javaforce.jar"/>
+    </zip>
+    <move file="jtorrent-${JTORRENTVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

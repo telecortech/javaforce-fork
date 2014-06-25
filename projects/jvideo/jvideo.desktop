@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Video Editor
+Comment=Video Editor similar to PiTiVi
+
+Icon=jvideo
+
+Type=Application
+Categories=System
+
+Exec=jvideo
+StartupNotify=false
+Terminal=false
+MimeType=
+
+Action=edit
+
+Title=jfVideo

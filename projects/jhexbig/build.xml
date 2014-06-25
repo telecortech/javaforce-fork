@@ -1,0 +1,69 @@
+<project name="jhexbig" default="jar" basedir=".">
+  <description>jhexbig</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JHEXBIGVERSION" value="0.2"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jhexbig.jar" includes="*.class" basedir="${build}">
+      <manifest>
+        <attribute name="Main-Class" value="jhexbig"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jhexbig.jar" todir="/usr/share/java"/>
+    <copy file="jhexbig" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jhexbig" perm="+x"/>
+    <copy file="jhexbig.desktop" todir="/usr/share/applications"/>
+    <copy file="jhexbig.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jhexbig.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jhexbig-${JHEXBIGVERSION}_all.deb"/>
+    </exec>
+    <copy file="jhexbig-${JHEXBIGVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jhexbig.spec"/>
+    </exec>
+    <copy file="jhexbig-${JHEXBIGVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="release" depends="jar" description="create release zip file">
+    <zip destfile="jhexbig${JHEXBIGVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jhexbig${JHEXBIGVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>
+
+

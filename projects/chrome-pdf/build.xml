@@ -1,0 +1,39 @@
+<project name="chrome-pdf" default="help" basedir=".">
+  <description>chrome-pdf</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="CHROMEPDFVERSION" value="0.2"/>
+
+  <target name="help" description="info">
+    <echo>There is nothing to compile, just install.</echo>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="chrome-pdf.desktop" todir="/usr/share/applications"/>
+    <copy file="chrome-pdf.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="chrome-pdf-${CHROMEPDFVERSION}_all.deb"/>
+    </exec>
+    <copy file="chrome-pdf-${CHROMEPDFVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="chrome-pdf.spec"/>
+    </exec>
+    <copy file="chrome-pdf-${CHROMEPDFVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

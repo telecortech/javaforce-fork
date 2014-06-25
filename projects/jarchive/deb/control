@@ -1,0 +1,11 @@
+Package: jarchive
+Version: 0.3
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 1
+Depends: javaforce (>= 6.1.0), zip
+Components: main
+Provides:
+Section: java
+Priority: optional
+Description: Archive Manager

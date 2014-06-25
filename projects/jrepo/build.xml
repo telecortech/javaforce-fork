@@ -1,0 +1,64 @@
+<project name="jrepo" default="jar" basedir=".">
+  <description>jrepo</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JREPOVERSION" value="0.1"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jrepo.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <fileset dir="." includes="sources.list"/>
+      <fileset dir="." includes="*.repo"/>
+      <manifest>
+        <attribute name="Main-Class" value="RepoApp"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo -E ant install -->
+  <target name="install" depends="jar" description="install files">
+    <copy file="jrepo.jar" todir="/usr/share/java"/>
+    <copy file="jrepo" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jrepo" perm="+x"/>
+    <copy file="jrepo-ubuntu.list" todir="/etc"/>
+    <copy file="jrepo-fedora.list" todir="/etc"/>
+    <copy file="jrepo.desktop" todir="/usr/share/applications"/>
+    <copy file="jrepo.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jrepo.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jrepo-${JREPOVERSION}_all.deb"/>
+      <arg value="deb"/>
+      <arg value="files-ubuntu.lst"/>
+    </exec>
+    <copy file="jrepo-${JREPOVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jrepo.spec"/>
+      <arg value="files-fedora.lst"/>
+    </exec>
+    <copy file="jrepo-${JREPOVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

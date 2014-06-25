@@ -1,0 +1,68 @@
+ChangeLog
+=========
+
+2-5-2014 : version 0.17
+ - new : added -start command line option (user requested feature)
+ - new : added human/machine detection thresholds/duration options
+ - new : added check for update option
+
+11-14-2013 : version 0.16
+ - fix : voip fixes for some PBXes that use qop registration
+
+9-19-2013 : version 0.15
+ - new : use embedded database server (derby) instead of MySQL
+
+3-6-2012 : version 0.14
+ - fix : g729a timestamp correction
+
+12-5-2012 : version 0.13
+ - new : added g711a codec and lots of voip improvements
+
+3-3-2012 : version 0.12
+ - new : added "Disable human/machine detection" - messages will start as soon as connection is made
+ - new : you can click "Stop" a second time to force all connections to be dropped instead of waiting gracefully
+
+1-29-2012 : version 0.11
+ - new : added "transfer call" option to messages selections (user requested feature)
+   - this will transfer call at end of the current message
+   - use this to automatically transfer a call
+
+8-4-2011 : version 0.10
+ - fix : make sure options have optimal default values when no configuration exists
+
+8-3-2011 : version 0.9
+ - new : added two new options (max RingTime & max Attempts) which were previously hard-coded are now configurable (user requested feature)
+
+5-2-2011 : version 0.8
+ - fix : used JDBC for database connection instead of my own driver.
+ - new : database keys were changed so that a phone number can exist in multiple lists but still only once per list.
+ - fix : Wav loader supports Microsoft WAV format (ignore 'fact' header)
+
+7-3-2011 : version 0.7.1
+ - fix : bad SQL code was unable to query lists with more than 256 rows.
+
+12-29-2010 : version 0.7
+ - new : added new survey options (major update) - database design was overhauled
+
+11-11-2010 : version 0.6
+ - fix : moved sql query out of 20ms timer by using a list that is processed in main thread.  Should improve audio quality.
+
+11-10-2010 : version 0.5
+ - fix : opps - forget to save delay to the config file
+
+11-9-2010 : version 0.4
+ - new : added delay option
+ - fix : placed synchronized locking around persistant sql code
+
+10-20-2010 : version 0.3
+ - new : added answering machine detection (it just waits for 1 second of silence after it hears something)
+ - new : added 1 min timeout if line keeps ringing
+
+10-16-2010 : version 0.2
+ - fix : g711 was not initialized
+ - new : sql connection is now kept open and other optimizations.
+ - new : g729a can be disabled (g729a requires lots of CPU power compared to g711)
+ - new : status is updated when audio timer is skipped due to slow system performance (either disable g729a or reduce # of lines)
+
+10-15-2010 : init release version 0.1
+

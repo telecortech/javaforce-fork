@@ -1,0 +1,53 @@
+<project name="jvnc" default="jar" basedir=".">
+  <description>jvnc</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JVNCVERSION" value="0.1"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jvnc.jar" includes="*.class" basedir="${build}">
+      <manifest>
+        <attribute name="Main-Class" value="VncViewer"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jvnc.jar" todir="/usr/share/java"/>
+    <copy file="jvnc" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jvnc" perm="+x"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jvnc-${JVNCVERSION}_all.deb"/>
+    </exec>
+    <copy file="jvnc-${JVNCVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jvnc.spec"/>
+    </exec>
+    <copy file="jvnc-${JVNCVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

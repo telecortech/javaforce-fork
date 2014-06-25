@@ -1,0 +1,208 @@
+#  jflinux.script - boot splash plugin
+#
+#  Copyright (C) 2012 jfLinux
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2, or (at your option)
+#  any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+#  02111-1307, USA.
+#
+#  Modified for jfLinux by : Peter Quiring <pquiring@gmail.com>
+#
+#  Written by: Alberto Milone <alberto.milone@canonical.com>
+#
+#  Based on the example provided with the "script plugin" written by:
+#              Charlie Brej   <cbrej@cs.man.ac.uk>
+#
+
+# Set the text colour in (rgb / 256)
+text_colour.red = 1.0;
+text_colour.green = 1.0;
+text_colour.blue = 1.0;
+
+# Tinted text #988592
+tinted_text_colour.red = 0.59;
+tinted_text_colour.green = 0.52;
+tinted_text_colour.blue = 0.57;
+
+# Action Text - #ffffff - RGB 255 255 255
+action_text_colour.red = 1.0;
+action_text_colour.green = 1.0;
+action_text_colour.blue = 1.0;
+
+# Orange - #ff4012 - RGB 255 64 18
+debugsprite = Sprite();
+debugsprite_bottom = Sprite();
+debugsprite_medium = Sprite();
+
+# General purpose function to create text
+fun WriteText (text, colour) {
+    image = Image.Text (text, colour.red, colour.green, colour.blue);
+    return image;
+}
+
+fun ImageToText (text) {
+    image = WriteText (text, text_colour);
+    return image;
+}
+
+fun ImageToTintedText (text) {
+    image = WriteText (text, tinted_text_colour);
+    return image;
+}
+
+fun ImageToActionText (text) {
+    image = WriteText (text, action_text_colour);
+    return image;
+}
+
+fun Debug(text) {
+    debugsprite.SetImage(ImageToText (text));
+}
+
+fun DebugBottom(text) {
+    debugsprite_bottom.SetImage(ImageToText (text));
+    debugsprite_bottom.SetPosition(0, (Window.GetHeight (0) - 20), 1);
+}
+
+fun DebugMedium(text) {
+    debugsprite_medium.SetImage(ImageToText (text));
+    debugsprite_medium.SetPosition(0, (Window.GetHeight (0) - 60), 1);
+}
+
+#------------------------------String functions---------------------------------
+
+# This is the equivalent for strstr()
+fun StringString(string, substring) {
+    start = 0;
+    while (String(string).CharAt (start)) {
+        walk = 0;
+        while (String(substring).CharAt (walk) == String(string).CharAt (start + walk) ) {
+            walk++;
+            if (!String(substring).CharAt (walk)) return start;
+        }
+        start++;
+    }
+
+    return NULL;
+}
+
+fun StringLength (string) {
+    index = 0;
+    while (String(string).CharAt(index)) index++;
+    return index;
+}
+
+fun StringCopy (source, beginning, end) {
+    local.destination = "";
+    for (index = beginning; ( ( (end == NULL) || (index <= end) ) && (String(source).CharAt(index)) ); index++) {
+        local.destination += String(source).CharAt(index);
+    }
+
+    return local.destination;
+}
+
+fun StringReplace (source, pattern, replacement) {
+    local.found = StringString(source, pattern);
+    if (local.found == NULL)
+        return source;
+
+    local.new_string = StringCopy (source, 0, local.found - 1) +
+                       replacement +
+                       StringCopy (source, local.found + StringLength(pattern), NULL);
+
+    return local.new_string;
+}
+
+# it makes sense to use it only for
+# numbers up to 100
+fun StringToInteger (str) {
+    int = -1;
+    for (i=0; i<=100; i++) {
+        if (i+"" == str) {
+            int = i;
+            break;
+        }
+    }
+    return int;
+}
+
+#-------------------------------------------------------------------------------
+
+Window.SetBackgroundTopColor (0.00, 0.00, 0.00);     # Nice colour on top of the screen fading to
+Window.SetBackgroundBottomColor (0.00, 0.00, 0.00);  # an equally nice colour on the bottom
+
+bits_per_pixel = Window.GetBitsPerPixel ();
+if (bits_per_pixel == 4) {
+    logo_filename = "logo.png";   #TODO : generate a 16 color version of logo.png
+} else {
+    logo_filename = "logo.png";
+}
+
+logo.image = Image (logo_filename);
+logo.sprite = Sprite ();
+logo.sprite.SetImage (logo.image);
+logo.width = logo.image.GetWidth ();
+logo.height = logo.image.GetHeight ();
+logo.x = Window.GetX () + Window.GetWidth () / 2 - logo.width  / 2;
+logo.y = Window.GetY () + Window.GetHeight () / 2 - logo.height;
+logo.z = 1000;
+logo.sprite.SetX (logo.x);
+logo.sprite.SetY (logo.y);
+logo.sprite.SetZ (logo.z);
+logo.sprite.SetOpacity (1);
+
+#-----------------------------------------Logo functions------------------------
+
+# Call this when updating the screen
+fun draw_logo () {
+    logo.sprite.SetX (logo.x);
+    logo.sprite.SetY (logo.y);
+    logo.sprite.SetZ (logo.z);
+    logo.sprite.SetOpacity (1);
+}
+
+# Plymouth.SetDisplayPasswordFunction (not_implemented);
+
+# Plymouth.SetMessageFunction (not_implemented);
+
+# Plymouth.SetBootProgressFunction (animate_progress_indicator);
+
+# Plymouth.SetBootProgressFunction: the callback function is called with two numbers, the progress (between 0 and 1) and the time spent booting so far
+# Plymouth.SetRootMountedFunction: the callback function is called when a new root is mounted
+# Plymouth.SetKeyboardInputFunction: the callback function is called with a string containing a new character entered on the keyboard
+
+#-----------------------------------------Refresh stuff ------------------------
+#
+# Calling Plymouth.SetRefreshFunction with a function will set that function to be
+# called up to 50 times every second, e.g.
+#
+# NOTE: if a refresh function is not set, Plymouth doesn't seem to be able to update
+#       the screen correctly
+#
+fun refresh_callback ()
+{
+    draw_logo ();
+}
+
+Plymouth.SetRefreshFunction (refresh_callback);
+
+#Plymouth.SetDisplayNormalFunction (display_normal_callback);
+
+#----------------------------------------- Quit --------------------------------
+
+#Plymouth.SetQuitFunction(quit_callback);
+
+#--------------------------------------- Main ----------------------------------
+
+draw_logo();

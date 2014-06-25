@@ -1,0 +1,2 @@
+#!/bin/bash
+java -cp /usr/share/java/javaforce.jar:/usr/share/java/jpbx/derby.jar:/usr/share/java/jpbx/jpbx-core.jar jpbx.core.Main create

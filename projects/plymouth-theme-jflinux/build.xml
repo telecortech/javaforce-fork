@@ -1,0 +1,58 @@
+<project name="plymouth-theme-jflinux" default="help" basedir=".">
+  <description>plymouth-theme-jflinux</description>
+  <!-- set global properties for this build -->
+  <property name="PLYMOUTHTHEMEJFLINUXVERSION" value="0.2"/>
+
+  <target name="help">
+    <echo>sudo ant install-ubuntu - install files for Ubuntu</echo>
+    <echo>sudo ant install-fedora - install files for Fedora</echo>
+    <echo>ant deb - build deb package</echo>
+    <echo>ant rpm - build rpm package</echo>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install-ubuntu" description="install files">
+    <mkdir dir="/lib/plymouth/themes/jflinux"/>
+    <copy todir="/lib/plymouth/themes/jflinux">
+      <fileset dir="." includes="*.png"/>
+    </copy>
+    <copy file="jflinux.grub" todir="/lib/plymouth/themes/jflinux"/>
+    <copy file="jflinux-ubuntu.plymouth" tofile="/lib/plymouth/themes/jflinux/jflinux.plymouth"/>
+    <copy file="jflinux.script" todir="/lib/plymouth/themes/jflinux"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install-fedora" description="install files">
+    <mkdir dir="/usr/share/plymouth/themes/jflinux"/>
+    <copy todir="/usr/share/plymouth/themes/jflinux">
+      <fileset dir="." includes="*.png"/>
+    </copy>
+    <copy file="jflinux.grub" todir="/usr/share/plymouth/themes/jflinux"/>
+    <copy file="jflinux-fedora.plymouth" tofile="/usr/share/plymouth/themes/jflinux/jflinux.plymouth"/>
+    <copy file="jflinux.script" todir="/usr/share/plymouth/themes/jflinux"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="plymouth-theme-jflinux-${PLYMOUTHTHEMEJFLINUXVERSION}_all.deb"/>
+      <arg value="deb"/>
+      <arg value="files-ubuntu.lst"/>
+    </exec>
+    <copy file="plymouth-theme-jflinux-${PLYMOUTHTHEMEJFLINUXVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jflinux.spec"/>
+      <arg value="files-fedora.lst"/>
+    </exec>
+    <copy file="plymouth-theme-jflinux-${PLYMOUTHTHEMEJFLINUXVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Google PDF Reader (chrome)
+MimeType=application/pdf
+Exec=/opt/google/chrome/chrome %f
+Type=Application
+GenericName=PDF Viewer
+Terminal=false
+Icon=chrome-pdf
+Caption=PDF Viewer

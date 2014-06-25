@@ -1,0 +1,58 @@
+<project name="jweb" default="jar" basedir=".">
+  <description>jweb</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JWEBVERSION" value="0.2"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jweb.jar" includes="*.class" basedir="${build}">
+      <manifest>
+        <attribute name="Main-Class" value="WebApp"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jweb.jar" todir="/usr/share/java"/>
+    <copy file="jweb" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jweb" perm="+x"/>
+    <copy file="jweb.desktop" todir="/usr/share/applications"/>
+    <copy file="jweb.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jweb.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jweb-${JWEBVERSION}_all.deb"/>
+    </exec>
+    <copy file="jweb-${JWEBVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jweb.spec"/>
+    </exec>
+    <copy file="jweb-${JWEBVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>
+
+

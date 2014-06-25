@@ -1,0 +1,57 @@
+<project name="jview" default="jar" basedir=".">
+  <description>jview</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JVIEWVERSION" value="0.4"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jview.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <manifest>
+        <attribute name="Main-Class" value="ViewApp"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jview.jar" todir="/usr/share/java"/>
+    <copy file="jview" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jview" perm="+x"/>
+    <copy file="jview.desktop" todir="/usr/share/applications"/>
+    <copy file="jview.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jview.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jview-${JVIEWVERSION}_all.deb"/>
+    </exec>
+    <copy file="jview-${JVIEWVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jview.spec"/>
+    </exec>
+    <copy file="jview-${JVIEWVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

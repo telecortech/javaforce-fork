@@ -1,0 +1,11 @@
+Package: jvideo
+Version: 0.13
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 1
+Depends: javaforce (>= 6.14.0)
+Components: main
+Provides:
+Section: java
+Priority: optional
+Description: Video Editor

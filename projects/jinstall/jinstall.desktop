@@ -1,0 +1,16 @@
+[Desktop Entry]
+Name=Installer
+GenericName=jfLinux Installer
+Comment=Installs Linux to Hard Drive
+
+Icon=jinstall
+
+Type=Application
+Categories=System
+
+Exec=jinstall
+StartupNotify=false
+Terminal=false
+MimeType=
+
+Title=jinstall

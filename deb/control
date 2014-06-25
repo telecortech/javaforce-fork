@@ -1,0 +1,11 @@
+Package: javaforce
+Version: 7.19.0
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 290
+Depends: default-jre, libjsch-java (>= 0.1.42), libjzlib-java, libjcifs-java, fuse, libfuse2, fuseiso, libcdio13
+Components: main
+Provides:
+Section: java
+Priority: optional
+Description: JavaForce base classes.

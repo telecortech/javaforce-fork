@@ -1,0 +1,140 @@
+<project name="jpasswords" default="jar" basedir=".">
+  <description>jpasswords</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JPASSWORDSVERSION" value="0.10"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfpasswords.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile,depjars" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jpasswords.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <fileset dir="." includes="*.crt"/>
+      <manifest>
+        <attribute name="Main-Class" value="PasswordsApp"/>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfpasswords.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <available property="keyexists" file="keystore.key"/>
+
+  <target name="genkey" unless="keyexists" description="generate keys">
+    <!-- create key -->
+    <genkey alias="jpasswords" storepass="password" keystore="keystore.key" keyalg="RSA" dname="CN=jfpasswords.sourceforge.net, OU=jfpasswords, O=JavaForce, C=CA"/>
+    <!-- create csr -->
+    <exec command="keytool -certreq -alias jpasswords -keystore keystore.key -file jpasswords.csr -storepass password"/>
+    <copy file="jpasswords.csr" todir="../../keys"/>
+  </target>
+
+  <target name="importcert">
+    <copy file="../../keys/javaforce.crt" todir="."/>
+    <exec command="keytool -import -alias root -file javaforce.crt -keystore keystore.key -storepass password -noprompt"/>
+    <copy file="../../keys/jpasswords.crt" todir="."/>
+    <exec command="keytool -import -alias jpasswords -file jpasswords.crt -keystore keystore.key -storepass password"/>
+  </target>
+
+  <target name="sign-jar" depends="jar,depjars" description="create applet jars">
+    <signjar jar="jpasswords.jar" alias="jpasswords" storepass="password" keystore="keystore.key" signedjar="jpasswords-signed.jar"/>
+    <signjar jar="javaforce.jar" alias="jpasswords" storepass="password" keystore="keystore.key" signedjar="javaforce-signed.jar"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jpasswords.jar" todir="/usr/share/java"/>
+    <copy file="jpasswords" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jpasswords" perm="+x"/>
+    <copy file="jpasswords.desktop" todir="/usr/share/applications"/>
+    <copy file="jpasswords.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jpasswords.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jpasswords-${JPASSWORDSVERSION}_all.deb"/>
+    </exec>
+    <copy file="jpasswords-${JPASSWORDSVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jpasswords.spec"/>
+    </exec>
+    <copy file="jpasswords-${JPASSWORDSVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" depends="jar" description="create windows installer">
+    <exec command="i686-w64-mingw32-windres -O coff -i jpasswords.rc -o jpasswords.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jpasswords.res -o jpasswords32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jpasswords.rc -o jpasswords.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jpasswords.res -o jpasswords64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jpasswords-${JPASSWORDSVERSION}.msi wix.obj"/>
+    <move file="jpasswords-${JPASSWORDSVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-bin" depends="sign-jar" description="create release zip file">
+    <zip destfile="jpasswords-${JPASSWORDSVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jpasswords-${JPASSWORDSVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jpasswords-src-${JPASSWORDSVERSION}.zip">
+      <fileset dir="../..">
+        <include name="license.txt"/>
+        <include name="projects/jpasswords/*.java"/>
+        <include name="projects/jpasswords/*.c"/>
+        <include name="projects/jpasswords/*.form"/>
+        <include name="projects/jpasswords/*.txt"/>
+        <include name="projects/jpasswords/*.xml"/>
+        <include name="projects/jpasswords/*.png"/>
+        <include name="projects/jpasswords/*.ico"/>
+        <include name="projects/jpasswords/*.rc"/>
+        <include name="projects/jpasswords/run.bat"/>
+        <include name="projects/jpasswords/nbproject/*.xml"/>
+        <include name="jars/javaforce.jar"/>
+      </fileset>
+    </zip>
+    <move file="jpasswords-src-${JPASSWORDSVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+      <fileset dir="." includes="**/*.key"/>
+      <fileset dir="." includes="**/*.csr"/>
+      <fileset dir="." includes="**/*.crt"/>
+    </delete>
+  </target>
+</project>

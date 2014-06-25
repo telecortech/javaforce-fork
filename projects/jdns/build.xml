@@ -1,0 +1,57 @@
+<project name="jdns" default="jar" basedir=".">
+  <description>paint</description>
+  <!-- set global properties for this build -->
+  <property name="JDNSVERSION" value="0.1"/>
+
+  <target name="jar" description="jar">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <echo>Nothing to compile</echo>
+  </target>
+
+  <target name="release-bin" depends="" description="create release zip file">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <zip destfile="jdns-${JDNSVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jdns-${JDNSVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" description="create windows installer">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <exec command="i686-w64-mingw32-windres -O coff -i jdns.rc -o jdns.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jdns.res -o jdns32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jdns.rc -o jdns.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jdns.res -o jdns64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jdns-${JDNSVERSION}.msi wix.obj"/>
+    <move file="jdns-${JDNSVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jdns" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jdns" perm="+x"/>
+    <mkdir dir="/etc/jinit"/>
+    <copy file="jdns.conf" todir="/etc/jinit"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jdns-${JDNSVERSION}_all.deb"/>
+    </exec>
+    <copy file="jdns-${JDNSVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jdns.spec"/>
+    </exec>
+    <copy file="jdns-${JDNSVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+</project>

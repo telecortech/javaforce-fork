@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = upgrade ]; then
+    update-alternatives --remove update-desktop-database /usr/bin/jf-update-desktop-database
+fi
+
+mkdir -p /etc/jconfig.d
+mkdir -p /etc/jinit
+mkdir -p /usr/share/jhelp
+
+exit 0

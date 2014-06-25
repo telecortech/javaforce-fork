@@ -1,0 +1,22 @@
+Whats' new....
+
+Apr 25, 2014 - v0.10 released
+  - new : added Track->Resample tool to resample a track (change sample freq rate)
+  - new : added Track->Info to show detailed track info
+  - new : added Menu->Settings to edit settings (just recording sample rate for now)
+  - cleaned up toolbars
+
+Oct 11, 2013 - v0.9 released
+  - implemented applet (menu code shared between app and applet)
+
+Oct 2, 2013 - v0.8 released
+  - fix stereo+ decoding
+
+Sept 27, 2013 - v0.7 released
+  - fix msvcr100.dll not found on msi package
+
+Sept 24, 2013 - v0.6 released
+  - codecpack can now be downloaded if needed
+
+Sept 23, 2013 - v0.5 released
+  - first windows release

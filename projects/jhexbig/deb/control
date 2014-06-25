@@ -1,0 +1,11 @@
+Package: jhexbig
+Version: 0.2
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 20
+Depends: javaforce (>= 6.0.0)
+Components: main
+Provides:
+Section: java
+Priority: optional
+Description: Sector Hex editor (for large files)

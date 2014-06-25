@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+if [ -x "/etc/init.d/jlogond" ]; then
+  update-rc.d jlogond defaults 60 >/dev/null
+fi

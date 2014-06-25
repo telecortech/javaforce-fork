@@ -1,0 +1,5 @@
+#!/bin/bash
+numlockx on
+export XAUTHORITY=/root/.Xauthority
+export DISPLAY=:0
+java -cp /usr/share/java/javaforce.jar:/usr/share/java/jna.jar::/usr/share/java/jna-platform.jar:/usr/share/java/jlogon.jar Startup

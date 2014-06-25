@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Apps Center
+Comment=Apps Center
+
+Icon=japps
+
+Type=Application
+Categories=System
+
+Exec=japps
+StartupNotify=false
+Terminal=false
+MimeType=application/x-deb
+
+Title=jfApps

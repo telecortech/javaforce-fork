@@ -1,0 +1,57 @@
+<project name="jstun" default="jar" basedir=".">
+  <description>paint</description>
+  <!-- set global properties for this build -->
+  <property name="JSTUNVERSION" value="0.1"/>
+
+  <target name="jar" description="jar">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <echo>Nothing to compile</echo>
+  </target>
+
+  <target name="release-bin" depends="" description="create release zip file">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <zip destfile="jstun-${JSTUNVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jstun-${JSTUNVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" description="create windows installer">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <exec command="i686-w64-mingw32-windres -O coff -i jstun.rc -o jstun.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jstun.res -o jstun32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jstun.rc -o jstun.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jstun.res -o jstun64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jstun-${JSTUNVERSION}.msi wix.obj"/>
+    <move file="jstun-${JSTUNVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jstun" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jstun" perm="+x"/>
+    <mkdir dir="/etc/jinit"/>
+    <copy file="jstun.conf" todir="/etc/jinit"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jstun-${JSTUNVERSION}_all.deb"/>
+    </exec>
+    <copy file="jstun-${JSTUNVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jstun.spec"/>
+    </exec>
+    <copy file="jstun-${JSTUNVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+</project>

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=jdesktop
+Comment=Log in using jdesktop
+Exec=/sbin/jdesktop
+TryExec=/sbin/jdesktop
+Icon=jdesktop
+Type=XSession

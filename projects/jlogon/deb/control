@@ -1,0 +1,12 @@
+Package: jlogon
+Version: 0.13
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 1
+Depends: javaforce (>= 6.14.0), xserver-xorg, plymouth, gvfs-bin, bluez, bluez-compat, pm-utils, winbind, smbclient, wpasupplicant, numlockx
+Recommends:
+Replaces:
+Section: net
+Priority: optional
+Homepage: http://javaforce.sourceforge.net
+Description: Java Startup and Logon

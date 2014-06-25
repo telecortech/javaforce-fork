@@ -1,0 +1,123 @@
+<project name="jfile" default="jar" basedir=".">
+  <description>jfile</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JFILEVERSION" value="0.9"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jffile.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jna.jar">
+      <zipfileset src="../../jars/jna.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jffile.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jna-platform.jar">
+      <zipfileset src="../../jars/jna-platform.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jffile.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" depends="depjars" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" deprecation="true" debug="true">
+      <classpath path="${classpath}"/>
+      <classpath path="jna.jar"/>
+      <classpath path="jna-platform.jar"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile,depjars" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jfile.jar" includes="**/*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <fileset dir="." includes="*.crt"/>
+      <manifest>
+        <attribute name="Main-Class" value="FileApp"/>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jffile.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <available property="keyexists" file="keystore.key"/>
+
+  <target name="genkey" unless="keyexists" description="generate keys">
+    <!-- create key -->
+    <genkey alias="jfile" storepass="password" keystore="keystore.key" keyalg="RSA" dname="CN=jffile.sourceforge.net, OU=jffile, O=JavaForce, C=CA"/>
+    <!-- create csr -->
+    <exec command="keytool -certreq -alias jfile -keystore keystore.key -file jfile.csr -storepass password"/>
+    <copy file="jfile.csr" todir="../../keys"/>
+  </target>
+
+  <target name="importcert">
+    <copy file="../../keys/javaforce.crt" todir="."/>
+    <exec command="keytool -import -alias root -file javaforce.crt -keystore keystore.key -storepass password -noprompt"/>
+    <copy file="../../keys/jfile.crt" todir="."/>
+    <exec command="keytool -import -alias jfile -file jfile.crt -keystore keystore.key -storepass password"/>
+  </target>
+
+  <target name="sign-jar" depends="jar,depjars" description="create applet jars">
+    <signjar jar="jfile.jar" alias="jfile" storepass="password" keystore="keystore.key" signedjar="jfile-signed.jar"/>
+    <signjar jar="javaforce.jar" alias="jfile" storepass="password" keystore="keystore.key" signedjar="javaforce-signed.jar"/>
+    <signjar jar="jna.jar" alias="jfile" storepass="password" keystore="keystore.key" signedjar="jna-signed.jar"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jfile.jar" todir="/usr/share/java"/>
+    <copy file="jfile" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jfile" perm="+x"/>
+    <copy file="jfileprops" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jfileprops" perm="+x"/>
+    <copy file="jmapshare" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jmapshare" perm="+x"/>
+    <copy file="junmapshare" todir="/usr/bin"/>
+    <chmod file="/usr/bin/junmapshare" perm="+x"/>
+    <copy file="jfile.desktop" todir="/usr/share/applications"/>
+    <copy file="jfile.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jfile.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jfile-${JFILEVERSION}_all.deb"/>
+    </exec>
+    <copy file="jfile-${JFILEVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jfile.spec"/>
+    </exec>
+    <copy file="jfile-${JFILEVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="javadoc" description="generate java documentation">
+    <javadoc sourcepath="src" destdir="javadoc" classpath="${classpath}"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

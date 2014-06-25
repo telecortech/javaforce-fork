@@ -1,0 +1,57 @@
+<project name="jwelcome" default="jar" basedir=".">
+  <description>jwelcome</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JWELCOMEVERSION" value="0.2"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jwelcome.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <manifest>
+        <attribute name="Main-Class" value="Installer"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jwelcome.jar" todir="/usr/share/java"/>
+    <copy file="jwelcome" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jwelcome" perm="+x"/>
+    <copy file="jwelcome.desktop" todir="/usr/share/applications"/>
+    <copy file="jwelcome.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jwelcome.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jwelcome-${JWELCOMEVERSION}_all.deb"/>
+    </exec>
+    <copy file="jwelcome-${JWELCOMEVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jwelcome.spec"/>
+    </exec>
+    <copy file="jwelcome-${JWELCOMEVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

@@ -1,0 +1,29 @@
+<project name="jdeb" default="help" basedir=".">
+  <description>paint</description>
+  <!-- set global properties for this build -->
+  <property name="JDEBVERSION" value="1.0"/>
+
+  <target name="help" description="help">
+    <echo>Nothing to compile</echo>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jdeb" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jdeb" perm="+x"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jdeb-${JDEBVERSION}_all.deb"/>
+    </exec>
+    <copy file="jdeb-${JDEBVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jdeb.spec"/>
+    </exec>
+    <copy file="jdeb-${JRPMVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+</project>

@@ -1,0 +1,16 @@
+[Desktop Entry]
+Name=Text Editor
+Comment=Text Editor
+
+Icon=jedit
+
+Type=Application
+Categories=System
+
+Exec=jedit %f
+StartupNotify=false
+Terminal=false
+MimeType=text/plain
+
+Title=jEdit
+

@@ -1,0 +1,11 @@
+Package: jtest3d
+Version: 0.1
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 1
+Depends: javaforce (>= 6.10.0)
+Components: main
+Provides:
+Section: java
+Priority: optional
+Description: Tests 3D Graphics

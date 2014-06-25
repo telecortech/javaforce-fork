@@ -1,0 +1,56 @@
+<project name="jcalc" default="jar" basedir=".">
+  <description>jcalc</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JCALCVERSION" value="0.4"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jcalc.jar" includes="*.class" basedir="${build}">
+      <manifest>
+        <attribute name="Main-Class" value="CalculatorApp"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jcalc.jar" todir="/usr/share/java"/>
+    <copy file="jcalc" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jcalc" perm="+x"/>
+    <copy file="jcalc.desktop" todir="/usr/share/applications"/>
+    <copy file="jcalc.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jcalc.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jcalc-${JCALCVERSION}_all.deb"/>
+    </exec>
+    <copy file="jcalc-${JCALCVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jcalc.spec"/>
+    </exec>
+    <copy file="jcalc-${JCALCVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

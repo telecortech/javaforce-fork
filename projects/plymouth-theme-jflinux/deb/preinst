@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+mkdir -p /lib/plymouth/themes/jflinux/

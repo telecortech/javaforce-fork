@@ -1,0 +1,111 @@
+<project name="jedit" default="jar" basedir=".">
+  <description>jedit</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JEDITVERSION" value="0.6"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfedit.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" target="1.6" source="1.6" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile,depjars" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jedit.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <manifest>
+        <attribute name="Main-Class" value="jedit"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jedit.jar" todir="/usr/share/java"/>
+    <copy file="jedit" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jedit" perm="+x"/>
+    <copy file="jedit.desktop" todir="/usr/share/applications"/>
+    <copy file="jedit.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jedit.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jtxtedit-${JEDITVERSION}_all.deb"/>
+    </exec>
+    <copy file="jtxtedit-${JEDITVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jtxtedit.spec"/>
+    </exec>
+    <copy file="jtxtedit-${JEDITVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" depends="jar" description="create windows installer">
+    <exec command="i686-w64-mingw32-windres -O coff -i jedit.rc -o jedit.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jedit.res -o jedit32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jedit.rc -o jedit.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jedit.res -o jedit64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jedit-${JEDITVERSION}.msi wix.obj"/>
+    <move file="jedit-${JEDITVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-bin" depends="jar" description="create release zip file">
+    <zip destfile="jedit-${JEDITVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jedit-${JEDITVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jedit-src-${JEDITVERSION}.zip">
+      <fileset dir="../..">
+        <include name="license.txt"/>
+        <include name="projects/jedit/src/*.java"/>
+        <include name="projects/jedit/src/*.form"/>
+        <include name="projects/jedit/*.c"/>
+        <include name="projects/jedit/*.txt"/>
+        <include name="projects/jedit/*.xml"/>
+        <include name="projects/jedit/*.png"/>
+        <include name="projects/jedit/*.ico"/>
+        <include name="projects/jedit/*.rc"/>
+        <include name="projects/jedit/run.bat"/>
+        <include name="projects/jedit/nbproject/*.xml"/>
+        <include name="jars/javaforce.jar"/>
+      </fileset>
+    </zip>
+    <move file="jedit-src-${JEDITVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

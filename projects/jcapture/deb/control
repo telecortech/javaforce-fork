@@ -1,0 +1,11 @@
+Package: jcapture
+Version: 0.4
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 1
+Depends: javaforce (>= 6.1.0), scrot
+Components: main
+Provides:
+Section: java
+Priority: optional
+Description: Screen Capture Utility

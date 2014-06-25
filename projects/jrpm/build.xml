@@ -1,0 +1,29 @@
+<project name="jrpm" default="help" basedir=".">
+  <description>paint</description>
+  <!-- set global properties for this build -->
+  <property name="JRPMVERSION" value="1.0"/>
+
+  <target name="help" description="help">
+    <echo>Nothing to compile</echo>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jrpm" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jrpm" perm="+x"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jrpm-${JRPMVERSION}_all.deb"/>
+    </exec>
+    <copy file="jrpm-${JRPMVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jrpm.spec"/>
+    </exec>
+    <copy file="jrpm-${JRPMVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+</project>

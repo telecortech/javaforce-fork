@@ -1,0 +1,150 @@
+<project name="jaudio" default="jar" basedir=".">
+  <description>jaudio</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JAUDIOVERSION" value="0.10"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfaudio.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jna.jar">
+      <zipfileset src="../../jars/jna.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfaudio.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" target="1.6" source="1.6" debug="true">
+      <classpath path="${classpath}"/>
+      <classpath>
+        <fileset dir="../../jars" includes="jna.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile,depjars" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jaudio.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <fileset dir="." includes="*.crt"/>
+      <manifest>
+        <attribute name="Main-Class" value="AudioApp"/>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfaudio.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <available property="keyexists" file="keystore.key"/>
+
+  <target name="genkey" unless="keyexists" description="generate keys">
+    <!-- create key -->
+    <genkey alias="jaudio" storepass="password" keystore="keystore.key" keyalg="RSA" dname="CN=jfaudio.sourceforge.net, OU=jfaudio, O=JavaForce, C=CA"/>
+    <!-- create csr -->
+    <exec command="keytool -certreq -alias jaudio -keystore keystore.key -file jaudio.csr -storepass password"/>
+    <copy file="jaudio.csr" todir="../../keys"/>
+  </target>
+
+  <target name="importcert">
+    <copy file="../../keys/javaforce.crt" todir="."/>
+    <exec command="keytool -import -alias root -file javaforce.crt -keystore keystore.key -storepass password -noprompt"/>
+    <copy file="../../keys/jaudio.crt" todir="."/>
+    <exec command="keytool -import -alias jaudio -file jaudio.crt -keystore keystore.key -storepass password"/>
+  </target>
+
+  <target name="sign-jar" depends="jar,depjars" description="create applet jars">
+    <signjar jar="jaudio.jar" alias="jaudio" storepass="password" keystore="keystore.key" signedjar="jaudio-signed.jar"/>
+    <signjar jar="javaforce.jar" alias="jaudio" storepass="password" keystore="keystore.key" signedjar="javaforce-signed.jar"/>
+    <signjar jar="jna.jar" alias="jaudio" storepass="password" keystore="keystore.key" signedjar="jna-signed.jar"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jaudio.jar" todir="/usr/share/java"/>
+    <copy file="jaudio" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jaudio" perm="+x"/>
+    <copy file="jaudio.desktop" todir="/usr/share/applications"/>
+    <copy file="jaudio.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jaudio.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jaudio-${JAUDIOVERSION}_all.deb"/>
+    </exec>
+    <copy file="jaudio-${JAUDIOVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jaudio.spec"/>
+    </exec>
+    <copy file="jaudio-${JAUDIOVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" depends="jar" description="create windows installer">
+    <exec command="i686-w64-mingw32-windres -O coff -i jaudio.rc -o jaudio.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jaudio.res -o jaudio32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jaudio.rc -o jaudio.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jaudio.res -o jaudio64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jaudio-${JAUDIOVERSION}.msi wix.obj"/>
+    <move file="jaudio-${JAUDIOVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-bin" depends="sign-jar" description="create release zip file">
+    <zip destfile="jaudio-${JAUDIOVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jaudio-${JAUDIOVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jaudio-src-${JAUDIOVERSION}.zip">
+      <fileset dir="../..">
+        <include name="license.txt"/>
+        <include name="projects/jaudio/src/*.java"/>
+        <include name="projects/jaudio/src/*.form"/>
+        <include name="projects/jaudio/*.c"/>
+        <include name="projects/jaudio/*.txt"/>
+        <include name="projects/jaudio/*.xml"/>
+        <include name="projects/jaudio/*.png"/>
+        <include name="projects/jaudio/*.ico"/>
+        <include name="projects/jaudio/*.rc"/>
+        <include name="projects/jaudio/run.bat"/>
+        <include name="projects/jaudio/nbproject/*.xml"/>
+        <include name="jars/javaforce.jar"/>
+        <include name="jars/jna.jar"/>
+      </fileset>
+    </zip>
+    <move file="jaudio-src-${JAUDIOVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

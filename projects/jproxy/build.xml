@@ -1,0 +1,57 @@
+<project name="jproxy" default="jar" basedir=".">
+  <description>paint</description>
+  <!-- set global properties for this build -->
+  <property name="JPROXYVERSION" value="0.2"/>
+
+  <target name="jar" description="jar">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <echo>Nothing to compile</echo>
+  </target>
+
+  <target name="release-bin" depends="" description="create release zip file">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <zip destfile="jproxy-${JPROXYVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jproxy-${JPROXYVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" description="create windows installer">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <exec command="i686-w64-mingw32-windres -O coff -i jproxy.rc -o jproxy.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jproxy.res -o jproxy32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jproxy.rc -o jproxy.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jproxy.res -o jproxy64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jproxy-${JPROXYVERSION}.msi wix.obj"/>
+    <move file="jproxy-${JPROXYVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jproxy" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jproxy" perm="+x"/>
+    <mkdir dir="/etc/jinit"/>
+    <copy file="jproxy.conf" todir="/etc/jinit"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jproxy-${JPROXYVERSION}_all.deb"/>
+    </exec>
+    <copy file="jproxy-${JPROXYVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jproxy.spec"/>
+    </exec>
+    <copy file="jproxy-${JPROXYVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+</project>

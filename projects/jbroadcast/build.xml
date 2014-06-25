@@ -1,0 +1,96 @@
+<project name="broadcast" default="jar" basedir=".">
+  <description>broadcast</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JBROADCASTVERSION" value="0.17"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" deprecation="true" target="1.6" source="1.6" debug="true">
+<!--      <compilerarg value="-Xlint:unchecked"/> -->
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jbroadcast.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <fileset dir="." includes="readme.txt"/>
+      <manifest>
+        <attribute name="Main-Class" value="Broadcast"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jbroadcast.jar" todir="/usr/share/java"/>
+    <copy file="jbroadcast" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jbroadcast" perm="+x"/>
+    <copy file="jbroadcast.desktop" todir="/usr/share/applications"/>
+    <copy file="jbroadcast.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jbroadcast.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jbroadcast-${JBROADCASTVERSION}_all.deb"/>
+    </exec>
+    <copy file="jbroadcast-${JBROADCASTVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jbroadcast.spec"/>
+    </exec>
+    <copy file="jbroadcast-${JBROADCASTVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="release-bin" depends="jar" description="create release zip file">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <copy file="../../jars/derby.jar" todir="."/>
+    <zip destfile="jfbroadcast-${JBROADCASTVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="readme.txt"/>
+        <include name="run.bat"/>
+        <include name="jbroadcast"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jfbroadcast-${JBROADCASTVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jfbroadcast-src-${JBROADCASTVERSION}.zip">
+      <fileset dir="../..">
+        <include name="license.txt"/>
+        <include name="projects/jbroadcast/src/*.java"/>
+        <include name="projects/jbroadcast/src/*.form"/>
+        <include name="projects/jbroadcast/*.txt"/>
+        <include name="projects/jbroadcast/*.xml"/>
+        <include name="projects/jbroadcast/nbproject/*.xml"/>
+        <include name="projects/jbroadcast/run.bat"/>
+        <include name="projects/jbroadcast/jbroadcast"/>
+        <include name="jars/javaforce.jar"/>
+        <include name="jars/derby.jar"/>
+      </fileset>
+    </zip>
+    <move file="jfbroadcast-src-${JBROADCASTVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="javadoc" description="generate java documentation">
+    <javadoc sourcefiles="src/*.java" destdir="javadoc" classpath="${classpath}"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

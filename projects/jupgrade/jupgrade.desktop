@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Upgrade Manager
+Comment=Upgrade Manager
+
+Icon=jupgrade
+
+Type=Application
+Categories=System
+
+Exec=jupgrade
+StartupNotify=false
+Terminal=false
+MimeType=
+
+Title=jupgrade

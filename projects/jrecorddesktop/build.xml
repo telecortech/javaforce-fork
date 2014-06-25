@@ -1,0 +1,161 @@
+<project name="jrecorddesktop" default="jar" basedir=".">
+  <description>jrecorddesktop</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JRECORDDESKTOPVERSION" value="0.3"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfrecorddesktop.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jna.jar">
+      <zipfileset src="../../jars/jna.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfrecorddesktop.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jna-platform.jar">
+      <zipfileset src="../../jars/jna-platform.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfrecorddesktop.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" depends="depjars" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true">
+      <classpath path="${classpath}"/>
+      <classpath path="jna-platform.jar"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jrecorddesktop.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <fileset dir="." includes="*.crt"/>
+      <manifest>
+        <attribute name="Main-Class" value="RecordDesktopApp"/>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfrecorddesktop.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <available property="keyexists" file="keystore.key"/>
+
+  <target name="genkey" unless="keyexists" description="generate keys">
+    <!-- create key -->
+    <genkey alias="jrecorddesktop" storepass="password" keystore="keystore.key" keyalg="RSA" dname="CN=jfrecorddesktop.sourceforge.net, OU=jrecorddesktop, O=JavaForce, C=CA" validity="3650"/>
+    <!-- create csr -->
+    <exec command="keytool -certreq -alias jrecorddesktop -keystore keystore.key -file jrecorddesktop.csr -storepass password"/>
+    <copy file="jrecorddesktop.csr" todir="../../keys"/>
+  </target>
+
+  <target name="importcert">
+    <copy file="../../keys/javaforce.crt" todir="."/>
+    <exec command="keytool -import -alias root -file javaforce.crt -keystore keystore.key -storepass password -noprompt"/>
+    <copy file="../../keys/jrecorddesktop.crt" todir="."/>
+    <exec command="keytool -import -alias jrecorddesktop -file jrecorddesktop.crt -keystore keystore.key -storepass password"/>
+  </target>
+
+  <target name="sign-jar" depends="jar,depjars" description="sign jar file">
+    <signjar jar="jrecorddesktop.jar" alias="jrecorddesktop" storepass="password" keystore="keystore.key" signedjar="jrecorddesktop-signed.jar"/>
+    <signjar jar="javaforce.jar" alias="jrecorddesktop" storepass="password" keystore="keystore.key" signedjar="javaforce-signed.jar"/>
+    <signjar jar="jna.jar" alias="jrecorddesktop" storepass="password" keystore="keystore.key" signedjar="jna-signed.jar"/>
+    <signjar jar="jna-platform.jar" alias="jrecorddesktop" storepass="password" keystore="keystore.key" signedjar="jna-platform-signed.jar"/>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jrecorddesktop.jar" todir="/usr/share/java"/>
+    <copy file="jrecorddesktop" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jrecorddesktop" perm="+x"/>
+    <copy file="jrecorddesktop.desktop" todir="/usr/share/applications"/>
+    <copy file="jrecorddesktop.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jrecorddesktop.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jrecorddesktop-${JRECORDDESKTOPVERSION}_all.deb"/>
+    </exec>
+    <copy file="jrecorddesktop-${JRECORDDESKTOPVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jrecorddesktop.spec"/>
+    </exec>
+    <copy file="jrecorddesktop-${JRECORDDESKTOPVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" depends="jar" description="create windows installer">
+    <exec command="i686-w64-mingw32-windres -O coff -i jrecorddesktop.rc -o jrecorddesktop.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jrecorddesktop.res -o jrecorddesktop32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jrecorddesktop.rc -o jrecorddesktop.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jrecorddesktop.res -o jrecorddesktop64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jrecorddesktop-${JRECORDDESKTOPVERSION}.msi wix.obj"/>
+    <move file="jrecorddesktop-${JRECORDDESKTOPVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-bin" depends="sign-jar" description="create release zip file">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <copy file="../../jars/jna.jar" todir="."/>
+    <copy file="../../jars/jna-platform.jar" todir="."/>
+    <zip destfile="jrecorddesktop-${JRECORDDESKTOPVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jrecorddesktop-${JRECORDDESKTOPVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jrecorddesktop-src-${JRECORDDESKTOPVERSION}.zip">
+      <fileset dir="../..">
+        <include name="license.txt"/>
+        <include name="projects/jrecorddesktop/*.java"/>
+        <include name="projects/jrecorddesktop/*.c"/>
+        <include name="projects/jrecorddesktop/*.form"/>
+        <include name="projects/jrecorddesktop/*.txt"/>
+        <include name="projects/jrecorddesktop/*.xml"/>
+        <include name="projects/jrecorddesktop/*.png"/>
+        <include name="projects/jrecorddesktop/*.ico"/>
+        <include name="projects/jrecorddesktop/*.rc"/>
+        <include name="projects/jrecorddesktop/run.bat"/>
+        <include name="projects/jrecorddesktop/nbproject/*.xml"/>
+        <include name="jars/javaforce.jar"/>
+        <include name="jars/jna.jar"/>
+        <include name="jars/jna-platform.jar"/>
+      </fileset>
+    </zip>
+    <move file="jrecorddesktop-src-${JRECORDDESKTOPVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

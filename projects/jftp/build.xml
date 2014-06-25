@@ -1,0 +1,144 @@
+<project name="jftp" default="jar" basedir=".">
+  <description>jftp</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JFTPVERSION" value="0.2.2"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfftp.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jcifs.jar">
+      <zipfileset src="../../jars/jcifs.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfftp.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jsch.jar">
+      <zipfileset src="../../jars/jsch.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfftp.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jzlib.jar">
+      <zipfileset src="../../jars/jzlib.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfftp.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" depends="depjars" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" deprecation="true" debug="true">
+      <classpath path="${classpath}"/>
+      <classpath path="jcifs.jar"/>
+      <classpath path="jsch.jar"/>
+      <classpath path="jzlib.jar"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jftp.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <manifest>
+        <attribute name="Main-Class" value="JFftp"/>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfftp.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <available property="keyexists" file="keystore.key"/>
+
+  <target name="genkeys" unless="keyexists" description="generate SSL keys">
+    <genkey alias="duke" storepass="password" keystore="keystore.key"
+      keyalg="RSA" validity="365">
+      <dname>
+        <param name="CN" value="JavaForce"/>
+        <param name="OU" value="Terminal"/>
+        <param name="O"  value="javaforce.sf.net"/>
+        <param name="C"  value="CA"/>
+      </dname>
+    </genkey>
+  </target>
+
+  <target name="sign-jar" depends="genkeys,jar,depjars" description="sign jar file">
+    <signjar jar="jftp.jar" alias="duke" storepass="password" keystore="keystore.key" signedjar="jftp-signed.jar"/>
+    <signjar jar="javaforce.jar" alias="duke" storepass="password" keystore="keystore.key" signedjar="javaforce-signed.jar"/>
+    <signjar jar="jcifs.jar" alias="duke" storepass="password" keystore="keystore.key" signedjar="jcifs-signed.jar"/>
+    <signjar jar="jsch.jar" alias="duke" storepass="password" keystore="keystore.key" signedjar="jsch-signed.jar"/>
+    <signjar jar="jzlib.jar" alias="duke" storepass="password" keystore="keystore.key" signedjar="jzlib-signed.jar"/>
+  </target>
+
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" depends="jar" description="create windows installer">
+    <exec command="i686-w64-mingw32-windres -O coff -i jftp.rc -o jftp.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jftp.res -o jftp32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jftp.rc -o jftp.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jftp.res -o jftp64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jftp-${JFTPVERSION}.msi wix.obj"/>
+    <move file="jftp-${JFTPVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-bin" depends="sign-jar" description="create release zip file">
+    <zip destfile="jftp-${JFTPVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="*.html"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jftp-${JFTPVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jftp-src-${JFTPVERSION}.zip">
+      <fileset dir="../..">
+        <include name="jars/javaforce.jar"/>
+        <include name="jars/jcifs.jar"/>
+        <include name="jars/jsch.jar"/>
+        <include name="jars/jzlib.jar"/>
+        <include name="license.txt"/>
+        <include name="projects/jftp/src/*.java"/>
+        <include name="projects/jftp/src/*.form"/>
+        <include name="projects/jftp/*.txt"/>
+        <include name="projects/jftp/*.xml"/>
+        <include name="projects/jftp/*.png"/>
+        <include name="projects/jftp/nbproject/*.xml"/>
+        <include name="projects/jftp/run.bat"/>
+      </fileset>
+    </zip>
+    <move file="jftp-src-${JFTPVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="javadoc" description="generate java documentation">
+    <javadoc sourcefiles="src/*.java" destdir="javadoc" classpath="${classpath}"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

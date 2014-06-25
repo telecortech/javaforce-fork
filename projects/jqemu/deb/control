@@ -1,0 +1,12 @@
+Package: jqemu
+Version: 0.2
+Architecture: all
+Maintainer: Peter Quiring <pquiring@jflinux.org>
+Installed-Size: 1
+Depends: javaforce, qemu, jvnc
+Recommends:
+Replaces:
+Section: net
+Priority: optional
+Homepage: http://javaforce.sourceforge.net
+Description: Java Virtual Machine Manager (QEMU)

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=AutoDialer System
+Comment=AutoDialer System
+
+Icon=jbroadcast
+
+Type=Application
+Categories=System
+
+Exec=jbroadcast
+StartupNotify=false
+Terminal=false
+MimeType=

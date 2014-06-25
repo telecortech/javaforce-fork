@@ -1,0 +1,138 @@
+<project name="jpbx" default="jar" basedir=".">
+  <description>jpbx</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JPBXLITEVERSION" value="0.17"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <copy file="../../jars/bouncycastle.jar" todir="."/>
+    <javac srcdir="${src}" destdir="${build}" debug="true">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="core-jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jpbx-core.jar" includes="jpbx/core/*.class" basedir="${build}">
+      <fileset dir="static" includes="*"/>
+      <manifest>
+        <attribute name="Main-Class" value="jpbx.core.Main"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="plugins-jar" depends="compile" description="build jar file">
+    <!-- Build plugins jar files from class files -->
+    <jar destfile="plugins/extensions.jar" includes="jpbx/plugins/core/Extensions*.class" basedir="${build}"/>
+    <jar destfile="plugins/trunks.jar" includes="jpbx/plugins/core/Trunks*.class" basedir="${build}"/>
+    <jar destfile="plugins/voicemail.jar" includes="jpbx/plugins/core/VoiceMail*.class" basedir="${build}"/>
+    <jar destfile="plugins/ivrs.jar">
+      <fileset dir="${build}" includes="jpbx/plugins/core/IVR*.class"/>
+      <fileset dir="${build}" includes="jpbx/plugins/core/Conference*.class"/>
+    </jar>
+  </target>
+
+  <target name="jar" depends="core-jar,plugins-jar" description="build everything"/>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <mkdir dir="/usr/share/java/jpbx"/>
+    <mkdir dir="/var/log/jpbx"/>
+    <mkdir dir="/var/lib/jpbx/voicemail"/>
+    <mkdir dir="/usr/share/java/jpbx/plugins"/>
+    <mkdir dir="/usr/share/sounds/jpbx/en"/>
+
+    <copy file="jpbxlite.html" todir="/usr/share/jhelp"/>
+    <copy file="jpbxlite.conf" todir="/etc/jinit"/>
+    <copy todir="/usr/share/java/jpbx">
+      <fileset file="*.jar"/>
+    </copy>
+    <copy todir="/usr/share/java/jpbx/plugins">
+      <fileset file="plugins/*.jar"/>
+    </copy>
+    <copy todir="/usr/share/sounds/jpbx/en">
+      <fileset file="sounds/en/*.wav"/>
+    </copy>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jpbxlite-${JPBXLITEVERSION}_all.deb"/>
+    </exec>
+    <copy file="jpbxlite-${JPBXLITEVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jpbxlite.spec"/>
+    </exec>
+    <copy file="jpbxlite-${JPBXLITEVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="release-bin" depends="jar" description="create release zip file">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <copy file="../../jars/bouncycastle.jar" todir="."/>
+    <copy file="../../jars/derby.jar" todir="."/>
+    <zip destfile="jpbxlite-${JPBXLITEVERSION}.zip">
+      <fileset dir="..">
+        <include name="jpbxlite/**/*.jar"/>
+        <include name="jpbxlite/**/*.wav"/>
+        <exclude name="jpbxlite/**/moh-*.wav"/>
+        <include name="jpbxlite/readme.txt"/>
+        <include name="jpbxlite/whatsnew.txt"/>
+        <include name="jpbxlite/run.bat"/>
+        <include name="jpbxlite/install.bat"/>
+        <include name="jpbxlite/run.sh"/>
+        <include name="jpbxlite/install.sh"/>
+        <include name="jpbxlite/jpbx.key"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jpbxlite-${JPBXLITEVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jpbxlite-src-${JPBXLITEVERSION}.zip">
+      <fileset dir="../../..">
+        <include name="jf/jars/derby.jar"/>
+        <include name="jf/jars/bouncycastle.jar"/>
+        <include name="jf/jars/javaforce.jar"/>
+        <include name="jf/license.txt"/>
+        <include name="jf/projects/jpbxlite/**/*.java"/>
+        <include name="jf/projects/jpbxlite/*.txt"/>
+        <include name="jf/projects/jpbxlite/*.png"/>
+        <include name="jf/projects/jpbxlite/**/*.xml"/>
+        <exclude name="jf/projects/jpbxlite/nbproject/private/*.xml"/>
+        <include name="jf/projects/jpbxlite/**/*.wav"/>
+        <exclude name="jf/projects/jpbxlite/**/moh-*.wav"/>
+        <include name="jf/projects/jpbxlite/run.bat"/>
+        <include name="jf/projects/jpbxlite/install.bat"/>
+        <include name="jf/projects/jpbxlite/run.sh"/>
+        <include name="jf/projects/jpbxlite/install.sh"/>
+        <include name="jf/projects/jpbxlite/static/*"/>
+      </fileset>
+    </zip>
+    <move file="jpbxlite-src-${JPBXLITEVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="javadoc" description="generate java documentation">
+    <javadoc sourcepath="src" destdir="javadoc" classpath="${classpath}"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir=".">
+        <include name="**/*.jar"/>
+        <exclude name="**/derby*.jar"/>
+        <exclude name="**/common*.jar"/>
+      </fileset>
+      <fileset dir="." includes="**/*.key"/>
+    </delete>
+  </target>
+</project>

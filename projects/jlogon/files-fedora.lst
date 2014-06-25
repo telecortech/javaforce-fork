@@ -1,0 +1,7 @@
+/usr/sbin/jlogon
+/usr/sbin/jlogon-runsession
+/usr/sbin/jlogon-rundomain
+/etc/dhcp/dhclient-script
+/usr/share/java/jlogon.jar
+/usr/lib/systemd/system-preset/82-jlogon.preset
+/usr/lib/systemd/system/jlogon.service

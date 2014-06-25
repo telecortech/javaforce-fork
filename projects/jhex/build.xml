@@ -1,0 +1,80 @@
+<project name="jhex" default="jar" basedir=".">
+  <description>jhex</description>
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="JHEXVERSION" value="0.2"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="javaforce.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile,depjars" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jhex.jar" includes="*.class" basedir="${build}">
+      <manifest>
+        <attribute name="Main-Class" value="jhex"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jhex.jar" todir="/usr/share/java"/>
+    <copy file="jhex" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jhex" perm="+x"/>
+    <copy file="jhex.desktop" todir="/usr/share/applications"/>
+    <copy file="jhex.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jhex.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jhex-${JHEXVERSION}_all.deb"/>
+    </exec>
+    <copy file="jhex-${JHEXVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jhex.spec"/>
+    </exec>
+    <copy file="jhex-${JHEXVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
+  <target name="release" depends="jar" description="create release zip file">
+    <zip destfile="jhex${JHEXVERSION}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jhex${JHEXVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>
+
+

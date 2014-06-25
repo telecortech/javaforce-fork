@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=jfLinux Logo
+Description=A theme that features a blank background with a logo.
+ModuleName=script
+
+[script]
+ImageDir=/lib/plymouth/themes/jflinux
+ScriptFile=/lib/plymouth/themes/jflinux/jflinux.script
