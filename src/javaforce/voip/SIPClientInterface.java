@@ -36,7 +36,7 @@ public interface SIPClientInterface {
    * Incoming invite, must return SIP code : 180 (ringing), 200 (connect),
    * 486(busy), or -1 to do nothing.
    */
-  public int onInvite(SIPClient client, String callid, String fromid, String fromnumber, SDP sdp);
+  public int onInvite(SIPClient client, String callid, String fromid, String fromnumber, SDP sdp, String record);
 
   /**
    * Call was cancelled/failed with SIP status code.

@@ -3,6 +3,11 @@ package javaforce.voip;
 import java.net.*;
 import java.util.*;
 import javaforce.*;
+import static javaforce.voip.SIP.generatetag;
+import static javaforce.voip.SIP.join;
+import static javaforce.voip.SIP.replacetag;
+import static javaforce.voip.SIP.resolve;
+import static javaforce.voip.SIP.useragent;
 
 /**
  * Handles the client end of a SIP link.
@@ -70,7 +75,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
    * @param iface must be a SIPClientInterface where SIP events are dispatched
    * to.<br>
    */
-  public boolean init(String remotehost, int remoteport, int localport, SIPClientInterface iface, Transport type) {
+  public boolean init(String remotehost, int remoteport, int localport, SIPClientInterface iface, SIP.Transport type) {
     this.iface = iface;
     this.localport = localport;
     this.remoteport = remoteport;
@@ -768,7 +773,8 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
             cd.dst.o1 = geto(msg, 1) + 1;
             cd.dst.o2 = geto(msg, 2) + 1;
             cd.dst.sdp = getSDP(msg);
-            switch (iface.onInvite(this, callid, cd.dst.from[0], cd.dst.from[1], cd.dst.sdp)) {
+            String record = SIP.getHeader("x-RecFile:", msg);
+            switch (iface.onInvite(this, callid, cd.dst.from[0], cd.dst.from[1], cd.dst.sdp, record)) {
               case 180:  //this is the normal return
                 reply(cd, cmd, 180, "RINGING", false, false);
                 break;
