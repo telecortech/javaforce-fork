@@ -52,4 +52,10 @@ public interface SIPClientInterface {
    * Server send notify command. (event="message-summary" or "presence")
    */
   public void onNotify(SIPClient client, String callid, String event, String content);
+  
+  /**
+   * Server send message,
+   */
+  public void onMessage(SIPClient client, String callid, String message);
+  
 }

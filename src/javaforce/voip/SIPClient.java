@@ -826,6 +826,11 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
             }
             break;
           }
+          if (req.equals("MESSAGE")) {
+              reply(cd, cmd, 200, "OK", false, false);
+              String newMessage = getMsgContent(msg);
+              iface.onMessage(this, callid, newMessage);
+          }
           break;
         case 100:
           iface.onTrying(this, callid);
@@ -905,6 +910,22 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
     }
   }
 
+  private String getMsgContent(String msg[]) {
+    for (int a = 0; a < msg.length; a++) {
+        //look for double \r\n (which appears as an empty line) that marks end of SIP header
+        if (msg[a].length() == 0) {
+            //send the rest of packet as content of NOTIFY event
+            String content = "";
+            for (int b = a + 1; b < msg.length; b++) {
+                content += msg[b];
+                content += "\r\n";
+            }
+            return content;
+        }
+    }
+    return null;
+  }
+  
   private int getlocalport() {
     if (rport != -1) return rport; else return localport;
   }
