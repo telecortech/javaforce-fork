@@ -20,6 +20,7 @@ public class SIPUDPTransport implements SIPTransport {
   public boolean open(int localport) {
     try {
       ds = new DatagramSocket(localport);
+      ds.setReuseAddress(true);
       active = true;
     } catch (Exception e) {
       JFLog.log(e);
